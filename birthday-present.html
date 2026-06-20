@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Happy Birthday!</title>
+<style>
+  /* ============================================================
+     EDIT ME — easy-to-find placeholders
+     ============================================================
+     1. DAD'S NAME      -> search for: DAD_NAME
+     2. BIRTHDAY MESSAGE -> search for: BIRTHDAY_MESSAGE (inside <p id="cardMessage">)
+     3. FAVORITE NFL TEAM COLORS -> edit the CSS variables in
+        ":root" block below labeled "TEAM COLOR THEME"
+        (a few preset team palettes are included as comments)
+     4. SHIPMENT_INFO -> search for: SHIPMENT_INFO (ship-by date,
+        platform, model/SKU/quantity — shown in the reveal card)
+     ============================================================ */
+
+  :root{
+    /* ---- TEAM COLOR THEME ----
+       Default theme below. Uncomment a preset or make your own.
+       --team-1 / --team-2 = gradient background colors
+       --team-accent       = accent color (laces, highlights, glow) */
+    --team-1: #013369;   /* e.g. Cowboys navy */
+    --team-2: #869397;   /* Cowboys silver */
+    --team-accent: #ffd700; /* gold accent */
+
+    /* Preset examples (copy values into the three vars above):
+       Chiefs:   --team-1:#e31837; --team-2:#ffb612; --team-accent:#ffffff;
+       Packers:  --team-1:#203731; --team-2:#ffb612; --team-accent:#ffffff;
+       Steelers: --team-1:#101820; --team-2:#ffb612; --team-accent:#c60c30;
+       Eagles:   --team-1:#004c54; --team-2:#a5acaf; --team-accent:#000000;
+       Patriots: --team-1:#002244; --team-2:#c60c30; --team-accent:#b0b7bc;
+       49ers:    --team-1:#aa0000; --team-2:#b3995d; --team-accent:#ffffff;
+    */
+
+    --bg-1: #1b1033;
+    --bg-2: #3a1856;
+    --pink: #ff5ca8;
+    --gold: #ffd23f;
+    --paper: #ff5ca8;
+    --paper-2: #c43e8b;
+    --ribbon: #ffd23f;
+    --box: #5b2a86;
+    --box-lid: #6f37a3;
+    --white: #fffaf3;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+  html,body{
+    height:100%;
+    overflow-x:hidden;
+  }
+
+  body{
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    min-height:100vh;
+    background: linear-gradient(135deg,var(--bg-1),var(--bg-2));
+    color:var(--white);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ---------- ambient floating background blobs ---------- */
+  .bg-blob{
+    position:fixed;
+    border-radius:50%;
+    filter:blur(40px);
+    opacity:.35;
+    z-index:0;
+    animation: float 12s ease-in-out infinite;
+  }
+  .bg-blob.b1{ width:260px;height:260px; background:var(--pink); top:-60px; left:-60px; animation-duration:14s;}
+  .bg-blob.b2{ width:220px;height:220px; background:var(--gold); bottom:-50px; right:-40px; animation-duration:10s; animation-delay:1s;}
+  .bg-blob.b3{ width:180px;height:180px; background:#7d5fff; top:40%; right:-70px; animation-duration:16s; animation-delay:2s;}
+
+  @keyframes float{
+    0%,100%{ transform: translate(0,0) scale(1); }
+    50%{ transform: translate(20px,-30px) scale(1.1); }
+  }
+
+  /* twinkling stars/sparkles drifting up */
+  .sparkle{
+    position:fixed;
+    bottom:-10px;
+    width:6px;height:6px;
+    background:var(--gold);
+    border-radius:50%;
+    opacity:.8;
+    z-index:0;
+    animation: rise linear infinite;
+  }
+  @keyframes rise{
+    0%{ transform: translateY(0) translateX(0) scale(1); opacity:.8;}
+    100%{ transform: translateY(-110vh) translateX(var(--drift,20px)) scale(.3); opacity:0;}
+  }
+
+  /* ---------- scene container ---------- */
+  .scene{
+    position:relative;
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding: 24px 16px 60px;
+    z-index:1;
+  }
+
+  /* ============= STAGE 1: LANDING / WRAPPED GIFT ============= */
+  #landing{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:28px;
+    text-align:center;
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  #landing.hidden{
+    opacity:0;
+    transform: scale(.9);
+    pointer-events:none;
+    position:absolute;
+  }
+
+  .headline{
+    font-size: clamp(1.4rem, 6vw, 2.1rem);
+    font-weight:700;
+    text-shadow: 0 2px 10px rgba(0,0,0,.35);
+    line-height:1.3;
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-6px); }
+  }
+
+  .tap-hint{
+    font-size: .95rem;
+    opacity:.85;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:.55; }
+    50%{ opacity:1; }
+  }
+
+  /* ----- the wrapped present (pure CSS/SVG) ----- */
+  .gift-wrap{
+    position:relative;
+    width:220px;
+    height:220px;
+    cursor:pointer;
+    user-select:none;
+    transform-origin:center bottom;
+  }
+  .gift-wrap:active{ transform: scale(.96); }
+
+  .box{
+    position:absolute;
+    left:10px; right:10px; bottom:10px;
+    height:130px;
+    background: linear-gradient(135deg, var(--paper), var(--paper-2));
+    border-radius:10px 10px 6px 6px;
+    box-shadow: 0 18px 30px rgba(0,0,0,.35), inset 0 -10px 20px rgba(0,0,0,.15);
+  }
+  .lid{
+    position:absolute;
+    left:0; right:0; top:55px;
+    height:34px;
+    background: linear-gradient(135deg, var(--paper-2), var(--paper));
+    border-radius:8px;
+    box-shadow: 0 8px 14px rgba(0,0,0,.3);
+    z-index:3;
+    transform-origin: 50% 100%;
+    transition: transform .9s cubic-bezier(.2,.9,.3,1.4), opacity .6s ease;
+  }
+  .ribbon-v{
+    position:absolute;
+    left:50%; top:55px; bottom:10px;
+    width:26px;
+    margin-left:-13px;
+    background: var(--ribbon);
+    z-index:4;
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,.08);
+    transition: transform .6s ease, opacity .5s ease;
+  }
+  .ribbon-h{
+    position:absolute;
+    left:10px; right:10px; top:55px;
+    height:26px;
+    margin-top:-13px;
+    background: var(--ribbon);
+    z-index:4;
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,.08);
+    transition: transform .6s ease, opacity .5s ease;
+  }
+  .bow{
+    position:absolute;
+    top:18px; left:50%;
+    width:90px; height:60px;
+    margin-left:-45px;
+    z-index:5;
+    transition: transform .7s cubic-bezier(.3,1.6,.4,1), opacity .5s ease;
+    transform-origin: 50% 100%;
+  }
+  .bow svg{ width:100%; height:100%; display:block; filter: drop-shadow(0 6px 8px rgba(0,0,0,.3)); }
+
+  .shine{
+    position:absolute;
+    top:10px; left:18px;
+    width:24px; height:60px;
+    background: rgba(255,255,255,.35);
+    border-radius:50%;
+    transform: rotate(20deg);
+    z-index:6;
+    pointer-events:none;
+  }
+
+  /* unwrap animation states (added via JS) */
+  .gift-wrap.unwrapping .bow{
+    transform: translateY(-40px) rotate(-35deg) scale(.6);
+    opacity:0;
+  }
+  .gift-wrap.unwrapping .ribbon-v{
+    transform: translateX(-120px) rotate(-50deg);
+    opacity:0;
+  }
+  .gift-wrap.unwrapping .ribbon-h{
+    transform: translateY(-90px) rotate(15deg);
+    opacity:0;
+  }
+  .gift-wrap.unwrapping .lid{
+    transform: translateY(-160px) rotate(-25deg);
+    opacity:0;
+  }
+  .gift-wrap.unwrapping .box{
+    animation: boxshake .5s ease 0s 1, boxglow .6s ease .15s 1 forwards;
+  }
+  @keyframes boxshake{
+    0%,100%{ transform: translateX(0) rotate(0); }
+    20%{ transform: translateX(-4px) rotate(-1deg); }
+    40%{ transform: translateX(4px) rotate(1deg); }
+    60%{ transform: translateX(-3px) rotate(-1deg); }
+    80%{ transform: translateX(3px) rotate(1deg); }
+  }
+  @keyframes boxglow{
+    to{ box-shadow: 0 0 50px 12px rgba(255,210,63,.65), 0 18px 30px rgba(0,0,0,.35); }
+  }
+
+  /* paper flap pieces that fly off on unwrap */
+  .flap{
+    position:absolute;
+    width:60px; height:60px;
+    background: var(--paper);
+    border-radius:6px;
+    z-index:2;
+    opacity:0;
+  }
+  .gift-wrap.unwrapping .flap{
+    animation: flapfly .8s ease forwards;
+  }
+  .flap.f1{ top:60px; left:10px; }
+  .flap.f2{ top:60px; right:10px; background:var(--paper-2);}
+  .flap.f3{ top:120px; left:10px; background:var(--paper-2);}
+  .flap.f4{ top:120px; right:10px; }
+  @keyframes flapfly{
+    0%{ opacity:1; transform: translate(0,0) rotate(0) scale(1); }
+    100%{ opacity:0; transform: translate(var(--fx,-80px), var(--fy,-120px)) rotate(var(--fr,-60deg)) scale(.4); }
+  }
+  .flap.f1{ --fx:-90px; --fy:-100px; --fr:-80deg; }
+  .flap.f2{ --fx:90px;  --fy:-110px; --fr:80deg; }
+  .flap.f3{ --fx:-100px;--fy:90px;  --fr:-100deg;}
+  .flap.f4{ --fx:100px; --fy:80px;  --fr:100deg; }
+
+  /* ============= CONFETTI ============= */
+  #confettiLayer{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:50;
+    overflow:hidden;
+  }
+  .confetti{
+    position:absolute;
+    top:-20px;
+    width:9px; height:14px;
+    opacity:0;
+    will-change: transform, opacity;
+    animation: confettiFall var(--dur,2.4s) ease-in forwards;
+  }
+  @keyframes confettiFall{
+    0%{ opacity:1; transform: translate(0,0) rotate(0deg); }
+    100%{ opacity:.95; transform: translate(var(--dx,0px), 105vh) rotate(var(--rot,720deg)); }
+  }
+
+  /* ============= STAGE 2: HEARTFELT CARD ============= */
+  #cardStage{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    text-align:center;
+    width:100%;
+  }
+  #cardStage.show{ display:flex; animation: cardIn .6s ease; }
+  @keyframes cardIn{
+    0%{ opacity:0; transform: translateY(30px) scale(.95); }
+    100%{ opacity:1; transform: translateY(0) scale(1); }
+  }
+
+  .greeting-card{
+    background: var(--white);
+    color:#2c2230;
+    border-radius:18px;
+    padding: 30px 24px;
+    width:100%;
+    max-width:380px;
+    box-shadow: 0 25px 50px rgba(0,0,0,.35);
+    position:relative;
+    transform: perspective(800px) rotateX(0deg);
+  }
+  .greeting-card::before{
+    content:'🎉';
+    position:absolute;
+    top:-18px; left:-10px;
+    font-size:2rem;
+    transform: rotate(-15deg);
+  }
+  .greeting-card::after{
+    content:'🎈';
+    position:absolute;
+    top:-22px; right:-6px;
+    font-size:2.1rem;
+    transform: rotate(12deg);
+  }
+  .card-name{
+    font-size:1.6rem;
+    font-weight:800;
+    color:var(--paper-2);
+    margin-bottom:10px;
+  }
+  .card-message{
+    font-size:1.05rem;
+    line-height:1.6;
+    color:#4a3f55;
+  }
+  .card-sign{
+    margin-top:16px;
+    font-style:italic;
+    opacity:.75;
+  }
+
+  .next-btn{
+    margin-top:8px;
+    padding: 12px 28px;
+    border:none;
+    border-radius: 999px;
+    background: var(--gold);
+    color:#2c2230;
+    font-weight:700;
+    font-size:1rem;
+    cursor:pointer;
+    box-shadow: 0 10px 20px rgba(0,0,0,.25);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .next-btn:hover{ transform: translateY(-2px); }
+  .next-btn:active{ transform: scale(.96); }
+
+  /* ============= STAGE 3: NFL REVEAL ============= */
+  #revealStage{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    text-align:center;
+    width:100%;
+  }
+  #revealStage.show{ display:flex; animation: revealIn .7s cubic-bezier(.2,.9,.3,1.2); }
+  @keyframes revealIn{
+    0%{ opacity:0; transform: scale(.7) rotate(-4deg); }
+    60%{ opacity:1; transform: scale(1.05) rotate(1deg); }
+    100%{ opacity:1; transform: scale(1) rotate(0); }
+  }
+
+  .nfl-card{
+    width:100%;
+    max-width:380px;
+    border-radius:20px;
+    padding: 28px 22px 24px;
+    background: linear-gradient(160deg, var(--team-1), var(--team-2));
+    box-shadow: 0 30px 60px rgba(0,0,0,.45), inset 0 0 0 3px rgba(255,255,255,.08);
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* yard-line stripe pattern */
+  .nfl-card .field-lines{
+    position:absolute;
+    inset:0;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.05) 0 18px,
+      rgba(255,255,255,0) 18px 40px
+    );
+    opacity:.5;
+  }
+
+  /* stadium light glow arcs */
+  .stadium-glow{
+    position:absolute;
+    top:-60px; left:50%;
+    width:340px; height:170px;
+    margin-left:-170px;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,.35), transparent 70%);
+    filter: blur(6px);
+    z-index:0;
+  }
+
+  .nfl-content{ position:relative; z-index:2; }
+
+  .nfl-eyebrow{
+    font-size:.78rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color: var(--team-accent);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  .nfl-title{
+    font-size: clamp(1.6rem, 7vw, 2.3rem);
+    font-weight:900;
+    color:#fff;
+    text-shadow: 0 4px 14px rgba(0,0,0,.4);
+    letter-spacing:.01em;
+    margin-bottom:4px;
+  }
+  .nfl-sub{
+    font-size:1rem;
+    color: rgba(255,255,255,.85);
+    margin-bottom:18px;
+  }
+
+  /* CSS/SVG football */
+  .football-wrap{
+    margin: 6px auto 18px;
+    width:120px;
+    animation: spinball 3.2s ease-in-out infinite;
+  }
+  @keyframes spinball{
+    0%,100%{ transform: rotate(-8deg) translateY(0); }
+    50%{ transform: rotate(8deg) translateY(-8px); }
+  }
+  .football-wrap svg{ width:100%; height:auto; display:block; filter: drop-shadow(0 12px 16px rgba(0,0,0,.4)); }
+
+  .nfl-tagline{
+    background: rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius:14px;
+    padding: 14px 16px;
+    font-size:1.02rem;
+    line-height:1.5;
+    color:#fff;
+    margin-bottom:16px;
+  }
+
+  .nfl-badges{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:4px;
+  }
+  .nfl-badge{
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.3);
+    color:#fff;
+    font-size:.78rem;
+    font-weight:700;
+    padding: 6px 12px;
+    border-radius:999px;
+    letter-spacing:.03em;
+  }
+  .nfl-badge.accent{
+    background: var(--team-accent);
+    color:#1a1a1a;
+    border-color: transparent;
+  }
+
+  /* goalpost decoration */
+  .goalpost{
+    position:absolute;
+    bottom:-6px; right:-6px;
+    width:70px;
+    opacity:.5;
+    z-index:1;
+  }
+
+  /* ---------- shipment tracker widget ---------- */
+  .shipment-card{
+    background: rgba(255,255,255,.95);
+    color:#1c1c24;
+    border-radius:14px;
+    padding: 16px 16px 14px;
+    margin-bottom: 16px;
+    text-align:left;
+    box-shadow: 0 10px 24px rgba(0,0,0,.25);
+  }
+  .shipment-title{
+    font-size:.8rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:800;
+    color:#555;
+    margin-bottom:8px;
+  }
+  .shipment-status{
+    color:#1f8a3a;
+    font-weight:700;
+    font-size:.98rem;
+    margin-bottom:8px;
+  }
+  .shipment-bar{
+    height:6px;
+    border-radius:999px;
+    background:#e2e2e8;
+    overflow:hidden;
+    margin-bottom:8px;
+  }
+  .shipment-bar-fill{
+    height:100%;
+    width: 35%;
+    background:#1f8a3a;
+    border-radius:999px;
+  }
+  .shipment-tag{
+    font-size:.85rem;
+    color:#555;
+    margin-bottom:12px;
+  }
+  .shipment-product{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    border-top: 1px solid #eee;
+    padding-top:12px;
+  }
+
+  /* CSS-only "box art" — no external image */
+  .box-art{
+    flex: 0 0 64px;
+    width:64px;
+    height:90px;
+    border-radius:4px;
+    background: linear-gradient(165deg, var(--team-1), var(--team-2));
+    position:relative;
+    overflow:hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,.3);
+    flex-shrink:0;
+  }
+  .box-art .plat-tag{
+    position:absolute;
+    top:4px; left:4px;
+    font-size:.5rem;
+    font-weight:800;
+    color:#fff;
+    background: rgba(0,0,0,.35);
+    padding:1px 4px;
+    border-radius:3px;
+    letter-spacing:.04em;
+  }
+  .box-art .ball-mini{
+    position:absolute;
+    bottom:6px; right:6px;
+    width:22px; height:14px;
+    background:#7b4426;
+    border-radius:50%;
+  }
+  .box-art .ball-mini::after{
+    content:'';
+    position:absolute;
+    left:50%; top:50%;
+    width:14px; height:2px;
+    background:#f1e6d8;
+    transform: translate(-50%,-50%);
+  }
+  .box-art .title-mini{
+    position:absolute;
+    bottom: 22px; left:4px; right:4px;
+    font-size:.46rem;
+    font-weight:800;
+    color:#fff;
+    line-height:1.15;
+    text-shadow: 0 1px 2px rgba(0,0,0,.5);
+  }
+
+  .shipment-details{ flex:1; }
+  .shipment-game-title{
+    font-weight:700;
+    font-size:.92rem;
+    color:#1c1c24;
+    margin-bottom:4px;
+  }
+  .shipment-meta{
+    font-size:.78rem;
+    color:#666;
+    line-height:1.5;
+  }
+
+  .replay-btn{
+    margin-top:18px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 2px solid rgba(255,255,255,.5);
+    background: rgba(255,255,255,.1);
+    color:#fff;
+    font-weight:600;
+    font-size:.95rem;
+    cursor:pointer;
+    backdrop-filter: blur(4px);
+    transition: transform .2s ease, background .2s ease;
+  }
+  .replay-btn:hover{ background: rgba(255,255,255,.22); transform: translateY(-2px); }
+  .replay-btn:active{ transform: scale(.95); }
+
+  @media (max-width: 360px){
+    .gift-wrap{ width:190px; height:190px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-blob b1"></div>
+  <div class="bg-blob b2"></div>
+  <div class="bg-blob b3"></div>
+  <div id="sparkles"></div>
+  <div id="confettiLayer"></div>
+
+  <div class="scene">
+
+    <!-- ============= STAGE 1: LANDING ============= -->
+    <div id="landing">
+      <div class="headline">
+        Happy Birthday <span id="dadNameHeadline">Dad</span>! 🎂<br>
+        Tap to unwrap your gift 🎁
+      </div>
+
+      <div class="gift-wrap" id="giftWrap">
+        <div class="flap f1"></div>
+        <div class="flap f2"></div>
+        <div class="flap f3"></div>
+        <div class="flap f4"></div>
+
+        <div class="box"></div>
+        <div class="lid" id="lid"></div>
+        <div class="ribbon-v" id="ribbonV"></div>
+        <div class="ribbon-h" id="ribbonH"></div>
+
+        <div class="bow" id="bow">
+          <svg viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 40 C20 10, 0 10, 5 30 C8 45, 30 45, 50 40 Z" fill="#ffd23f"/>
+            <path d="M50 40 C80 10, 100 10, 95 30 C92 45, 70 45, 50 40 Z" fill="#ffd23f"/>
+            <circle cx="50" cy="40" r="11" fill="#f5b400"/>
+            <path d="M45 48 L35 68 L48 58 Z" fill="#ffd23f"/>
+            <path d="M55 48 L65 68 L52 58 Z" fill="#ffd23f"/>
+          </svg>
+        </div>
+
+        <div class="shine"></div>
+      </div>
+
+      <div class="tap-hint">👆 tap the present</div>
+    </div>
+
+    <!-- ============= STAGE 2: HEARTFELT CARD ============= -->
+    <div id="cardStage">
+      <div class="greeting-card">
+        <div class="card-name">Happy Birthday, <span id="dadNameCard">Dad</span>!</div>
+        <!-- BIRTHDAY_MESSAGE: edit the text below to your own message -->
+        <p class="card-message" id="cardMessage">
+          Every year I get to celebrate the guy who taught me how to throw a
+          spiral, argue about refs, and never miss a kickoff. Thank you for
+          being the best dad, biggest fan, and favorite person to watch
+          football with. Here's to another year of making memories together.
+          I love you!
+        </p>
+        <div class="card-sign">— Love, your favorite kid 💛</div>
+      </div>
+      <button class="next-btn" id="nextBtn">See your gift ➜</button>
+    </div>
+
+    <!-- ============= STAGE 3: NFL REVEAL ============= -->
+    <div id="revealStage">
+      <div class="nfl-card">
+        <div class="stadium-glow"></div>
+        <div class="field-lines"></div>
+
+        <!-- goalpost decoration (CSS/SVG only) -->
+        <svg class="goalpost" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <rect x="26" y="10" width="6" height="65" fill="#fff"/>
+          <rect x="6" y="6" width="48" height="6" fill="#fff"/>
+          <rect x="6" y="6" width="6" height="20" fill="#fff"/>
+          <rect x="48" y="6" width="6" height="20" fill="#fff"/>
+        </svg>
+
+        <div class="nfl-content">
+          <div class="nfl-eyebrow">Big Reveal</div>
+          <div class="nfl-title">MADDEN NFL 27</div>
+          <div class="nfl-sub">Already on its way to your console 🚚</div>
+
+          <div class="football-wrap">
+            <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="100" cy="60" rx="95" ry="52" fill="#7b4426"/>
+              <ellipse cx="100" cy="60" rx="95" ry="52" fill="none" stroke="#3e2210" stroke-width="3"/>
+              <line x1="40" y1="60" x2="160" y2="60" stroke="#f1e6d8" stroke-width="4"/>
+              <line x1="70" y1="42" x2="70" y2="78" stroke="#f1e6d8" stroke-width="4"/>
+              <line x1="100" y1="38" x2="100" y2="82" stroke="#f1e6d8" stroke-width="4"/>
+              <line x1="130" y1="42" x2="130" y2="78" stroke="#f1e6d8" stroke-width="4"/>
+              <ellipse cx="70" cy="38" rx="14" ry="20" fill="#fff" opacity=".12"/>
+            </svg>
+          </div>
+
+          <div class="nfl-tagline">
+            Preordered for you! Drops <strong>August 2026</strong> — first one
+            to kick off with you when it lands 🏈
+          </div>
+
+          <!-- ================================================
+               SHIPMENT_INFO: edit the ship-by date / platform /
+               SKU details below to match your order confirmation
+               ================================================ -->
+          <div class="shipment-card">
+            <div class="shipment-title">Shipment One</div>
+            <div class="shipment-status">We'll ship it by <span id="shipByDate">August 13</span>.</div>
+            <div class="shipment-bar"><div class="shipment-bar-fill"></div></div>
+            <div class="shipment-tag">Pre-Ordered</div>
+
+            <div class="shipment-product">
+              <div class="box-art">
+                <span class="plat-tag" id="platformTag">PS5</span>
+                <div class="title-mini">MADDEN<br>NFL 27</div>
+                <div class="ball-mini"></div>
+              </div>
+              <div class="shipment-details">
+                <div class="shipment-game-title">EA SPORTS Madden NFL 27 — <span id="platformName">PlayStation 5</span></div>
+                <div class="shipment-meta">
+                  Model: <span id="modelNum">38494</span><br>
+                  SKU: <span id="skuNum">6680977</span><br>
+                  Quantity: <span id="qtyNum">1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nfl-badges">
+            <span class="nfl-badge accent">PREORDERED</span>
+            <span class="nfl-badge">RELEASE: AUG 2026</span>
+            <span class="nfl-badge">CO-OP READY</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="replay-btn" id="replayBtn">🔁 Watch it again</button>
+    </div>
+
+  </div>
+
+<script>
+  // ---------------------------------------------------------------
+  // EDIT ME: Dad's name (used in headline + card)
+  // ---------------------------------------------------------------
+  const DAD_NAME = "Dad"; // <-- change to his actual name, e.g. "Robert"
+
+  document.getElementById('dadNameHeadline').textContent = DAD_NAME;
+  document.getElementById('dadNameCard').textContent = DAD_NAME;
+
+  const giftWrap   = document.getElementById('giftWrap');
+  const landing    = document.getElementById('landing');
+  const cardStage  = document.getElementById('cardStage');
+  const revealStage= document.getElementById('revealStage');
+  const nextBtn    = document.getElementById('nextBtn');
+  const replayBtn  = document.getElementById('replayBtn');
+  const confettiLayer = document.getElementById('confettiLayer');
+  const sparklesContainer = document.getElementById('sparkles');
+
+  let unwrapping = false;
+
+  function spawnSparkles(){
+    sparklesContainer.innerHTML = '';
+    for(let i=0;i<18;i++){
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.style.left = Math.random()*100 + 'vw';
+      s.style.setProperty('--drift', (Math.random()*60-30)+'px');
+      s.style.animationDuration = (6+Math.random()*8)+'s';
+      s.style.animationDelay = (Math.random()*8)+'s';
+      sparklesContainer.appendChild(s);
+    }
+  }
+  spawnSparkles();
+
+  function burstConfetti(count = 90){
+    const colors = ['#ff5ca8','#ffd23f','#7d5fff','#39e0ff','#ff8a3d','#ffffff'];
+    for(let i=0;i<count;i++){
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      const left = Math.random()*100;
+      const dx = (Math.random()*200-100);
+      const dur = 1.8 + Math.random()*1.6;
+      const delay = Math.random()*0.4;
+      const rot = 360 + Math.random()*720;
+      const color = colors[Math.floor(Math.random()*colors.length)];
+      c.style.left = left + 'vw';
+      c.style.background = color;
+      c.style.setProperty('--dx', dx + 'px');
+      c.style.setProperty('--dur', dur + 's');
+      c.style.setProperty('--rot', rot + 'deg');
+      c.style.animationDelay = delay + 's';
+      if(Math.random() > 0.5){ c.style.borderRadius = '50%'; }
+      confettiLayer.appendChild(c);
+      setTimeout(()=> c.remove(), (dur+delay)*1000 + 200);
+    }
+  }
+
+  function startUnwrap(){
+    if(unwrapping) return;
+    unwrapping = true;
+    giftWrap.classList.add('unwrapping');
+    burstConfetti(70);
+
+    setTimeout(() => {
+      burstConfetti(50);
+      landing.classList.add('hidden');
+      cardStage.classList.add('show');
+    }, 950);
+  }
+
+  function showReveal(){
+    cardStage.classList.remove('show');
+    revealStage.classList.add('show');
+    burstConfetti(110);
+  }
+
+  function resetAndReplay(){
+    revealStage.classList.remove('show');
+    cardStage.classList.remove('show');
+    giftWrap.classList.remove('unwrapping');
+    landing.classList.remove('hidden');
+    unwrapping = false;
+  }
+
+  giftWrap.addEventListener('click', startUnwrap);
+  giftWrap.addEventListener('touchend', (e)=>{ e.preventDefault(); startUnwrap(); }, {passive:false});
+
+  nextBtn.addEventListener('click', showReveal);
+  replayBtn.addEventListener('click', resetAndReplay);
+</script>
+
+</body>
+</html>
