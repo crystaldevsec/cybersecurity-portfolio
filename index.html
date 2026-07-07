@@ -472,6 +472,21 @@ section { padding: 5.5rem 2rem; position: relative; }
 }
 .gallery-placeholder .gp-icon { font-size: 1.6rem; color: rgba(0,245,255,0.3); }
 .gallery-placeholder .gp-name { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.05em; }
+.gallery-play {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(10,10,15,0.7);
+  border: 1px solid var(--cyan);
+  box-shadow: var(--glow-cyan);
+  color: var(--cyan);
+  font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  padding-left: 4px;
+  pointer-events: none;
+}
 
 .lightbox-overlay {
   position: fixed; inset: 0; z-index: 500;
@@ -490,7 +505,7 @@ section { padding: 5.5rem 2rem; position: relative; }
   background: var(--card);
   overflow: hidden;
 }
-.lightbox-box img { display: block; max-width: 90vw; max-height: 85vh; }
+.lightbox-box img, .lightbox-box video { display: block; max-width: 90vw; max-height: 85vh; }
 .lightbox-close {
   position: absolute; top: 10px; right: 10px;
   width: 32px; height: 32px;
@@ -722,7 +737,7 @@ footer .pink { color: var(--pink); }
     <div class="hero-badges">
       <span class="hbadge hbadge-green"><span class="pulse"></span>Open to Work</span>
       <span class="hbadge hbadge-cyan">BBA Cybersecurity — UTSA, Magna Cum Laude</span>
-      <span class="hbadge hbadge-pink">Security+ In Progress</span>
+      <span class="hbadge hbadge-pink">CompTIA Security+</span>
       <span class="hbadge hbadge-cyan">DoD Secret Clearance Eligible</span>
     </div>
   </div>
@@ -907,17 +922,24 @@ footer .pink { color: var(--pink); }
     </p>
 
     <div class="gallery-grid reveal">
-      <div class="gallery-item" data-img="assets/images/defcon1.jpg">
-        <img src="assets/images/defcon1.jpg" alt="Group photo with fellow attendees at DEF CON 32" loading="lazy"/>
-      </div>
       <div class="gallery-item" data-img="assets/images/defcon2.jpg">
         <img src="assets/images/defcon2.jpg" alt="Night selfie with friends outside the DEF CON 32 venue in Las Vegas" loading="lazy"/>
       </div>
       <div class="gallery-item" data-img="assets/images/defcon3.jpg">
         <img src="assets/images/defcon3.jpg" alt="Open Research Institute amateur radio hardware demo at DEF CON 32" loading="lazy"/>
       </div>
+      <div class="gallery-item" data-img="assets/images/defcon1.jpg">
+        <img src="assets/images/defcon1.jpg" alt="Group photo with fellow attendees at DEF CON 32" loading="lazy"/>
+      </div>
       <div class="gallery-item" data-img="assets/images/defcon4.jpg">
         <img src="assets/images/defcon4.jpg" alt="DEF CON 32 main stage before the talk on the FBI's encrypted phone company Anom" loading="lazy"/>
+      </div>
+      <div class="gallery-item" data-img="assets/images/defcon5.jpg">
+        <img src="assets/images/defcon5.jpg" alt="DEF CON 32 app showing the Cold Calls social engineering event at the Social Engineering Community Village" loading="lazy"/>
+      </div>
+      <div class="gallery-item" data-video="assets/images/defcon-video.mp4">
+        <img src="assets/images/defcon-video-poster.jpg" alt="Video from the DEF CON 32 conference floor" loading="lazy"/>
+        <div class="gallery-play" aria-hidden="true">▶</div>
       </div>
     </div>
   </div>
@@ -927,7 +949,8 @@ footer .pink { color: var(--pink); }
 <div class="lightbox-overlay" id="lightboxOverlay">
   <div class="lightbox-box">
     <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
-    <img id="lightboxImg" src="" alt=""/>
+    <img id="lightboxImg" src="" alt="" style="display:none;"/>
+    <video id="lightboxVideo" controls playsinline style="display:none;"></video>
   </div>
 </div>
 
@@ -981,7 +1004,7 @@ footer .pink { color: var(--pink); }
         <div class="t-line"><span class="t-prompt">$ </span><span class="t-cmd">cat certs.txt</span> <span class="t-comment"># certifications</span></div>
         <div class="t-section-label">// Certifications</div>
         <div class="t-pills">
-          <span class="t-pill pill-yellow">CompTIA Security+ <em style="font-style:normal;opacity:0.7;">[in progress]</em></span>
+          <span class="t-pill pill-yellow">CompTIA Security+</span>
           <span class="t-pill pill-purple">SC-900 <em style="font-style:normal;opacity:0.7;">[planned]</em></span>
           <span class="t-pill pill-cyan">(ISC)&sup2; Member</span>
           <span class="t-pill pill-pink">TryHackMe Member</span>
@@ -1367,16 +1390,30 @@ navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', ()=> nav
 (function(){
   const overlay = document.getElementById('lightboxOverlay');
   const img     = document.getElementById('lightboxImg');
+  const video   = document.getElementById('lightboxVideo');
   const closeBtn= document.getElementById('lightboxClose');
   document.querySelectorAll('.gallery-item').forEach(item => {
     item.addEventListener('click', () => {
-      const src = item.dataset.img;
-      img.src = src;
-      img.alt = src;
+      if(item.dataset.video){
+        img.style.display = 'none';
+        video.style.display = 'block';
+        video.src = item.dataset.video;
+        video.play();
+      } else {
+        video.style.display = 'none';
+        img.style.display = 'block';
+        img.src = item.dataset.img;
+        img.alt = item.querySelector('img') ? item.querySelector('img').alt : '';
+      }
       overlay.classList.add('open');
     });
   });
-  function close(){ overlay.classList.remove('open'); img.src = ''; }
+  function close(){
+    overlay.classList.remove('open');
+    img.src = '';
+    video.pause();
+    video.src = '';
+  }
   closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', e => { if(e.target === overlay) close(); });
   document.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
