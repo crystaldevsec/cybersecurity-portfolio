@@ -838,14 +838,19 @@ footer .pink { color: var(--pink); }
           <span class="badge badge-wip">In Progress</span>
         </div>
         <h3 class="card-title">Splunk SIEM Home Lab</h3>
-        <p class="card-desc">Deployed Splunk Enterprise on Ubuntu Server via VirtualBox. Configured Windows Event Log ingestion, built custom detection dashboards, and developed SPL queries to identify suspicious authentication patterns and brute-force attempts.</p>
+        <p class="card-desc">Built a complete SIEM pipeline from scratch on a Windows host: provisioned an Ubuntu Server 22.04 VM in VirtualBox, deployed Splunk Enterprise 10.4.0, and configured the Universal Forwarder to ship Windows Security, System, and Application Event Logs into the SIEM in real time. Currently ingesting and analyzing 5,000+ live Windows events. Built a 3-panel security monitoring dashboard (login activity over time, failed logins by account, top event codes) and configured a scheduled SPL alert rule that detects brute-force login patterns (3+ failed attempts within a 15-minute window). Resolved real infrastructure challenges along the way, including VM network mode troubleshooting (NAT vs. Bridged Adapter), static IP configuration via Netplan, SSH-based remote administration of a headless Linux server, and Splunk credential recovery via user-seed.conf.</p>
         <div class="card-tags">
-          <span class="tag">Splunk</span>
-          <span class="tag">Ubuntu</span>
-          <span class="tag">VirtualBox</span>
+          <span class="tag">Splunk Enterprise</span>
           <span class="tag">SPL</span>
-          <span class="tag">Log Analysis</span>
+          <span class="tag">Ubuntu Server</span>
+          <span class="tag">VirtualBox</span>
+          <span class="tag">Windows Event Logs</span>
           <span class="tag">SIEM</span>
+          <span class="tag">SSH</span>
+          <span class="tag">Log Analysis</span>
+          <span class="tag">Alerting</span>
+          <span class="tag">Dashboards</span>
+          <span class="tag">Netplan</span>
         </div>
         <!-- <a class="card-link" href="#" target="_blank">↗ Read write-up</a> -->
       </div>
