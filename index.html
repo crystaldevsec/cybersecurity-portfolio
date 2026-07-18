@@ -435,6 +435,119 @@ section { padding: 5.5rem 2rem; position: relative; }
 .card-link { font-size: 0.75rem; color: var(--cyan); display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.5rem; letter-spacing: 0.05em; }
 .card-link:hover { text-shadow: var(--glow-cyan); }
 
+/* ── PROJECT MODAL (image slideshow) ── */
+.project-card { cursor: pointer; }
+.pmodal-overlay {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(5,5,8,0.92);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.pmodal-overlay.open { display: flex; }
+.pmodal-box {
+  position: relative;
+  width: min(860px, 94vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--cyan);
+  border-radius: 8px;
+  box-shadow: var(--glow-cyan), inset 0 0 60px rgba(0,245,255,0.02);
+  padding: 1.75rem;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.pmodal-overlay.open .pmodal-box { opacity: 1; transform: scale(1); }
+.pmodal-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 34px; height: 34px;
+  border: 1px solid var(--pink);
+  border-radius: 50%;
+  background: rgba(10,10,15,0.85);
+  color: var(--pink);
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--glow-pink);
+  z-index: 2;
+}
+.pmodal-title {
+  font-family: var(--font-hdr);
+  font-size: 1.05rem;
+  color: #fff;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.6rem;
+  padding-right: 2.5rem;
+}
+.pmodal-desc {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 1.25rem;
+}
+.pmodal-stage {
+  position: relative;
+  background: #050508;
+  border: 1px solid rgba(0,245,255,0.15);
+  border-radius: 6px;
+  min-height: 300px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.pmodal-stage img {
+  max-width: 100%;
+  max-height: 55vh;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.pmodal-stage img.show { opacity: 1; }
+.pmodal-empty {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 3rem 1rem;
+  letter-spacing: 0.05em;
+}
+.pmodal-empty .pe-icon { font-size: 1.8rem; display: block; margin-bottom: 0.6rem; color: rgba(0,245,255,0.3); }
+.pmodal-arrow {
+  position: absolute; top: 50%;
+  transform: translateY(-50%);
+  width: 40px; height: 40px;
+  border: 1px solid var(--cyan);
+  border-radius: 50%;
+  background: rgba(10,10,15,0.8);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  z-index: 2;
+}
+.pmodal-arrow:hover { box-shadow: var(--glow-cyan); }
+.pmodal-arrow.prev { left: 10px; }
+.pmodal-arrow.next { right: 10px; }
+.pmodal-dots {
+  display: flex; justify-content: center; gap: 0.5rem;
+  margin-top: 1rem;
+}
+.pmodal-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,245,255,0.4);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.pmodal-dot.active { background: var(--cyan); box-shadow: 0 0 8px rgba(0,245,255,0.6); }
+
 /* Placeholder card */
 .project-card.placeholder { border-style: dashed; border-color: rgba(0,245,255,0.08); align-items: center; justify-content: center; text-align: center; min-height: 220px; }
 .placeholder:hover { box-shadow: none; transform: none; border-color: rgba(0,245,255,0.15); }
@@ -832,7 +945,7 @@ footer .pink { color: var(--pink); }
       ════════════════════════════════════════════ -->
 
       <!-- Project 1 -->
-      <div class="project-card reveal" data-glow="cyan">
+      <div class="project-card reveal" data-glow="cyan" data-project="splunk-lab">
         <div class="card-header">
           <span class="card-icon">🔎</span>
           <span class="badge badge-wip">In Progress</span>
@@ -856,7 +969,7 @@ footer .pink { color: var(--pink); }
       </div>
 
       <!-- Project 2 -->
-      <div class="project-card reveal" data-glow="pink">
+      <div class="project-card reveal" data-glow="pink" data-project="osint-audit">
         <div class="card-header">
           <span class="card-icon">🌐</span>
           <span class="badge badge-done">Completed</span>
@@ -874,7 +987,7 @@ footer .pink { color: var(--pink); }
       </div>
 
       <!-- Project 3 -->
-      <div class="project-card reveal" data-glow="cyan">
+      <div class="project-card reveal" data-glow="cyan" data-project="cim-logistics">
         <div class="card-header">
           <span class="card-icon">🚚</span>
           <span class="badge badge-wip">In Progress</span>
@@ -891,7 +1004,7 @@ footer .pink { color: var(--pink); }
       </div>
 
       <!-- Project 4 -->
-      <div class="project-card reveal" data-glow="pink">
+      <div class="project-card reveal" data-glow="pink" data-project="finance-app">
         <div class="card-header">
           <span class="card-icon">💰</span>
           <span class="badge badge-planned">Planned</span>
@@ -907,7 +1020,7 @@ footer .pink { color: var(--pink); }
       </div>
 
       <!-- Project 5 -->
-      <div class="project-card reveal" data-glow="cyan">
+      <div class="project-card reveal" data-glow="cyan" data-project="cim-technical">
         <div class="card-header">
           <span class="card-icon">🔐</span>
           <span class="badge badge-planned">Planned</span>
@@ -969,6 +1082,25 @@ footer .pink { color: var(--pink); }
 </section>
 
 <!-- ── LIGHTBOX ── -->
+<!-- ── PROJECT MODAL ── -->
+<div class="pmodal-overlay" id="pmodalOverlay">
+  <div class="pmodal-box">
+    <button class="pmodal-close" id="pmodalClose" aria-label="Close">&times;</button>
+    <h3 class="pmodal-title" id="pmodalTitle"></h3>
+    <p class="pmodal-desc" id="pmodalDesc"></p>
+    <div class="pmodal-stage" id="pmodalStage">
+      <button class="pmodal-arrow prev" id="pmodalPrev" aria-label="Previous image">&lt;</button>
+      <img id="pmodalImg" src="" alt=""/>
+      <div class="pmodal-empty" id="pmodalEmpty" style="display:none;">
+        <span class="pe-icon">📷</span>
+        No images yet — screenshots coming soon.
+      </div>
+      <button class="pmodal-arrow next" id="pmodalNext" aria-label="Next image">&gt;</button>
+    </div>
+    <div class="pmodal-dots" id="pmodalDots"></div>
+  </div>
+</div>
+
 <div class="lightbox-overlay" id="lightboxOverlay">
   <div class="lightbox-box">
     <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
@@ -1440,6 +1572,142 @@ navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', ()=> nav
   closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', e => { if(e.target === overlay) close(); });
   document.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+})();
+
+// ── Project card modal slideshow ────────────────────────────────────────────────
+(function(){
+  // To add images for a project: drop files in the folder below and list them here.
+  const PROJECT_IMAGES = {
+    'splunk-lab': [
+      'assets/images/splunk-lab/photo1.jpg',
+      'assets/images/splunk-lab/photo2.jpg',
+      'assets/images/splunk-lab/photo3.jpg'
+    ],
+    'osint-audit': [
+      'assets/images/osint-audit/photo1.jpg',
+      'assets/images/osint-audit/photo2.jpg',
+      'assets/images/osint-audit/photo3.jpg'
+    ],
+    'cim-logistics': [
+      'assets/images/cim-logistics/photo1.jpg',
+      'assets/images/cim-logistics/photo2.jpg',
+      'assets/images/cim-logistics/photo3.jpg'
+    ],
+    'finance-app': [
+      'assets/images/finance-app/photo1.jpg',
+      'assets/images/finance-app/photo2.jpg',
+      'assets/images/finance-app/photo3.jpg'
+    ],
+    'cim-technical': [
+      'assets/images/cim-technical/photo1.jpg',
+      'assets/images/cim-technical/photo2.jpg',
+      'assets/images/cim-technical/photo3.jpg'
+    ]
+  };
+
+  const overlay = document.getElementById('pmodalOverlay');
+  const box     = overlay.querySelector('.pmodal-box');
+  const titleEl = document.getElementById('pmodalTitle');
+  const descEl  = document.getElementById('pmodalDesc');
+  const imgEl   = document.getElementById('pmodalImg');
+  const emptyEl = document.getElementById('pmodalEmpty');
+  const dotsEl  = document.getElementById('pmodalDots');
+  const prevBtn = document.getElementById('pmodalPrev');
+  const nextBtn = document.getElementById('pmodalNext');
+  const closeBtn= document.getElementById('pmodalClose');
+
+  let slides = [];
+  let current = 0;
+  let isOpen = false;
+  const probeCache = {};
+
+  // Probe each listed path once; keep only images that actually exist.
+  function probe(key){
+    if(probeCache[key]) return probeCache[key];
+    const list = PROJECT_IMAGES[key] || [];
+    probeCache[key] = Promise.all(list.map(src => new Promise(res => {
+      const im = new Image();
+      im.onload = () => res(src);
+      im.onerror = () => res(null);
+      im.src = src;
+    }))).then(results => results.filter(Boolean));
+    return probeCache[key];
+  }
+
+  function renderDots(){
+    dotsEl.innerHTML = '';
+    slides.forEach((_, i) => {
+      const d = document.createElement('button');
+      d.className = 'pmodal-dot' + (i === current ? ' active' : '');
+      d.setAttribute('aria-label', 'Image ' + (i + 1));
+      d.addEventListener('click', () => show(i));
+      dotsEl.appendChild(d);
+    });
+  }
+
+  function show(i){
+    if(!slides.length) return;
+    current = (i + slides.length) % slides.length;
+    imgEl.classList.remove('show');
+    setTimeout(() => {
+      imgEl.src = slides[current];
+      imgEl.onload = () => imgEl.classList.add('show');
+    }, 150);
+    dotsEl.querySelectorAll('.pmodal-dot').forEach((d, di) => d.classList.toggle('active', di === current));
+  }
+
+  function open(card){
+    const key = card.dataset.project;
+    titleEl.textContent = card.querySelector('.card-title') ? card.querySelector('.card-title').textContent : '';
+    descEl.textContent  = card.querySelector('.card-desc') ? card.querySelector('.card-desc').textContent : '';
+    overlay.classList.add('open');
+    isOpen = true;
+    slides = []; current = 0;
+    imgEl.style.display = 'none';
+    imgEl.classList.remove('show');
+    emptyEl.style.display = 'none';
+    dotsEl.innerHTML = '';
+    probe(key).then(found => {
+      if(!isOpen) return;
+      slides = found;
+      const multi = slides.length > 1;
+      prevBtn.style.display = multi ? 'flex' : 'none';
+      nextBtn.style.display = multi ? 'flex' : 'none';
+      if(slides.length){
+        imgEl.style.display = 'block';
+        emptyEl.style.display = 'none';
+        renderDots();
+        show(0);
+      } else {
+        imgEl.style.display = 'none';
+        emptyEl.style.display = 'block';
+      }
+    });
+  }
+
+  function close(){
+    overlay.classList.remove('open');
+    isOpen = false;
+    imgEl.src = '';
+  }
+
+  document.querySelectorAll('.project-card[data-project]').forEach(card => {
+    card.addEventListener('click', e => {
+      if(e.target.closest('.tag') || e.target.closest('a')) return;
+      open(card);
+    });
+  });
+
+  prevBtn.addEventListener('click', e => { e.stopPropagation(); show(current - 1); });
+  nextBtn.addEventListener('click', e => { e.stopPropagation(); show(current + 1); });
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', e => { if(e.target === overlay) close(); });
+  document.addEventListener('keydown', e => {
+    if(!isOpen) return;
+    if(e.key === 'Escape') close();
+    if(e.key === 'ArrowLeft') show(current - 1);
+    if(e.key === 'ArrowRight') show(current + 1);
+  });
 })();
 
 // ── Scroll reveal ─────────────────────────────────────────────────────────────
